@@ -259,3 +259,146 @@ gender_gap_hourly_final_focus <- emmeans(
 gender_gap_final_table <- pairs(gender_gap_hourly_final_focus)
 print(gender_gap_final_table)
 
+############################################################
+## BLINDER-OAXACA DECOMPOSITION
+############################################################
+
+# Install package if necessary
+# install.packages("oaxaca")
+
+library(oaxaca)
+library(dplyr)
+
+############################################################
+## 1. STEM SAMPLE
+############################################################
+
+df_stem <- df_final %>%
+  filter(STEM == TRUE)
+
+oaxaca_stem <- oaxaca(
+
+  log_Hourly_Wage ~
+    Marital_Status +
+    Certifications +
+    ComputerForWork +
+    InternetForWork +
+    Urban_Rural +
+    Age +
+    job_self_employed +
+    job_self_employed_informal +
+    job_employee +
+    job_self_employed_paid +
+    Fulltime_Work +
+    Parttime_Work
+  | Gender,
+
+  data = df_stem,
+
+  R = 1000
+
+)
+
+############################################################
+## STEM RESULTS
+############################################################
+
+summary(oaxaca_stem)
+
+print(oaxaca_stem)
+
+plot(oaxaca_stem)
+
+
+
+############################################################
+## 2. NON-STEM SAMPLE
+############################################################
+
+df_nonstem <- df_final %>%
+  filter(STEM == FALSE)
+
+oaxaca_nonstem <- oaxaca(
+
+  log_Hourly_Wage ~
+    Marital_Status +
+    Certifications +
+    ComputerForWork +
+    InternetForWork +
+    Urban_Rural +
+    Age +
+    job_self_employed +
+    job_self_employed_informal +
+    job_employee +
+    job_self_employed_paid +
+    Fulltime_Work +
+    Parttime_Work
+  | Gender,
+
+  data = df_nonstem,
+
+  R = 1000
+
+)
+
+############################################################
+## NON-STEM RESULTS
+############################################################
+
+summary(oaxaca_nonstem)
+
+print(oaxaca_nonstem)
+
+plot(oaxaca_nonstem)
+
+
+
+############################################################
+## 3. ENTIRE SAMPLE
+############################################################
+
+oaxaca_all <- oaxaca(
+
+  log_Hourly_Wage ~
+    STEM +
+    Marital_Status +
+    Certifications +
+    ComputerForWork +
+    InternetForWork +
+    Urban_Rural +
+    Age +
+    job_self_employed +
+    job_self_employed_informal +
+    job_employee +
+    job_self_employed_paid +
+    Fulltime_Work +
+    Parttime_Work
+  | Gender,
+
+  data = df_final,
+
+  R = 1000
+
+)
+
+############################################################
+## ENTIRE SAMPLE RESULTS
+############################################################
+
+summary(oaxaca_all)
+
+print(oaxaca_all)
+
+plot(oaxaca_all)
+
+
+
+############################################################
+## OPTIONAL: VARIABLE-BY-VARIABLE CONTRIBUTIONS
+############################################################
+
+summary(oaxaca_stem, decomposition = "detailed")
+
+summary(oaxaca_nonstem, decomposition = "detailed")
+
+summary(oaxaca_all, decomposition = "detailed")
